@@ -1,0 +1,16 @@
+#project_name: PacBio
+#project_path: kubernetes
+#project_namespace: pac-bio
+#repoURL: git@github.com:uvarc/PacBio.git
+
+
+##Namespace CPU Quota
+#request_cpu: 35
+#limits_cpu: 40
+
+##Namespace Memory Quota
+#request_memory: 450Gi
+#limits_memory: 500Gi
+
+##Namespace Storage Quota
+#request_storage: 500Gi
