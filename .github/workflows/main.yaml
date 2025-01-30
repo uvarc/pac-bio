@@ -20,7 +20,7 @@ jobs:
       -
         name: Set the emv
         id: set_env
-        run: echo "BUILD_PROJ=pacbio" >> $GITHUB_ENV
+        run: echo "BUILD_PROJ=pac-bio" >> $GITHUB_ENV
       -
         name: Extract branch name
         shell: bash
