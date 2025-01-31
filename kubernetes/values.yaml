@@ -25,7 +25,6 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 8243
 
 ingress:
   enabled: false
