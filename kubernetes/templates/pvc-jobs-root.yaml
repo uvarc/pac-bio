@@ -9,7 +9,7 @@ spec:
   resources:
     requests:
       storage: 100Gi
-  storageClassName: csi-cephfs-sc
+  storageClassName: csi-rbd-sc
   selector:
     matchLabels:
       app: "pac-bio"
