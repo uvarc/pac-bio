@@ -4,7 +4,7 @@ metadata:
   name: {{ include "pac-bio.fullname" . }}-jobs-root
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:

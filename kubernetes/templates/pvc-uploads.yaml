@@ -4,7 +4,7 @@ metadata:
   name: {{ include "pac-bio.fullname" . }}-uploads
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
