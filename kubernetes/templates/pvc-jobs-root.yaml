@@ -1,16 +1,16 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ include "pac-bio.fullname" . }}-jobs-root
-spec:
-  accessModes:
-    - ReadWriteOnce
-  volumeMode: Filesystem
-  resources:
-    requests:
-      storage: 100Gi
-  storageClassName: csi-rbd-sc
-  selector:
-    matchLabels:
-      app: "pac-bio"
-      pv: "jobs-root"
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: {{ include "pac-bio.fullname" . }}-jobs-root
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  volumeMode: Filesystem
+#  resources:
+#    requests:
+#      storage: 100Gi
+#  storageClassName: csi-rbd-sc
+#  selector:
+#    matchLabels:
+#      app: "pac-bio"
+#      pv: "jobs-root"
