@@ -48,23 +48,23 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-#          volumeMounts:
-#            - name: "uploads"
-#              mountPath: "/opt/pacbio/smrtlink/userdata/uploads"
-#            - name: "jobs-root"
-#              mountPath: "/opt/pacbio/smrtlink/userdata/jobs_root.default"
-#            - name: "db-datadir"
-#              mountPath: "/opt/pacbio/smrtlink/userdata/db_datadir.default"
-#      volumes:
-#        - name: "uploads"
-#          persistentVolumeClaim:
-#            claimName: {{ include "pac-bio.fullname" . }}-uploads
-#        - name: "jobs-root"
-#          persistentVolumeClaim:
-#            claimName: {{ include "pac-bio.fullname" . }}-jobs-root
-#        - name: "db-datadir"
-#          persistentVolumeClaim:
-#            claimName: {{ include "pac-bio.fullname" . }}-db-datadir
+          volumeMounts:
+            - name: "uploads"
+              mountPath: "/opt/pacbio/smrtlink/userdata/uploads"
+            - name: "jobs-root"
+              mountPath: "/opt/pacbio/smrtlink/userdata/jobs_root.default"
+            - name: "db-datadir"
+              mountPath: "/opt/pacbio/smrtlink/userdata/db_datadir.default"
+      volumes:
+        - name: "uploads"
+          persistentVolumeClaim:
+            claimName: {{ include "pac-bio.fullname" . }}-uploads
+        - name: "jobs-root"
+          persistentVolumeClaim:
+            claimName: {{ include "pac-bio.fullname" . }}-jobs-root
+        - name: "db-datadir"
+          persistentVolumeClaim:
+            claimName: {{ include "pac-bio.fullname" . }}-db-datadir
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
