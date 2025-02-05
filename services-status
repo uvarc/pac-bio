@@ -1,0 +1,173 @@
+#!/bin/bash
+# -*- mode: sh; c-basic-offset: 4; tab-width: 8; indent-tabs-mode: nil -*-
+# vi: set shiftwidth=4 tabstop=8 softtabstop=4 expandtab:
+# :indentSize=4:tabSize=8:noTabs=true:
+# vim: filetype=sh
+
+# ---- error handling
+set -o errexit;
+set -o posix;
+set -o pipefail;
+set -o errtrace;
+set -o nounset;
+unexpected_error() {
+    local errstat=$?
+    echo "${g_prog:-$(basename "$0")}: Error! Encountered unexpected error at 'line $(caller)', bailing out..." 1>&2
+    exit $errstat;
+}
+trap unexpected_error ERR;
+
+# Force the path to only what we need, saving off the original path
+PATH_ORIG=$PATH;
+PATH=/usr/bin:/bin
+
+g_prog=$(basename "$0");
+g_progdir=$(dirname "$0");
+g_progdir_abs=$(dirname "$(readlink -f "$0")");
+
+# ---- global env
+
+. "$g_progdir_abs/../../private/runtime-common/lib/globalenv.ish"
+
+# ---- error functions
+merror() {
+    echo "$g_prog: Error! ""$@" 1>&2;
+    exit 1;
+}
+minterror() {
+    echo "$g_prog: Internal Error! ""$@" 1>&2;
+    exit 1;
+}
+mwarn() {
+    echo "$g_prog: Warning! ""$@" 1>&2;}
+
+# ---- usage
+
+usage() {
+    local exitstat=2;
+    if [[ ! -z "${2:-}" ]] ; then
+        if [[ ! $2 =~ [[:digit:]]+ ]] ; then
+            minterror "usage(): exitstat ($2) must be numeric."
+        fi
+        exitstat=$2;
+    fi
+
+    # Only redirect to stderr on non-zero exit status
+    if [[ $exitstat -ne 0 ]] ; then
+        exec 1>&2;
+    fi
+
+    if [[ ! -z "${1:-}" ]] ; then
+        echo "$g_prog: Error! $1"
+    fi
+
+    echo "Usage: $g_prog [--help] \\"
+    echo "             [-e|--exitonerr] \\"
+    echo "             [-q|--quiet] \\"
+    echo "             [--wait] [--waittime N]"
+
+    echo "         -e|--exitonerr          -- exit on first error"
+    echo "         -q|--quiet              -- do not display status output on success";
+    echo "                                    (not implemented yet)"
+    echo "         --wait                  -- wait for services to be available"
+    echo "                                    (ignored)"
+    echo "         --waittime              -- time to wait for services to be available"
+    echo "                                    (ignored)"
+    echo "         --help        -- print this usage";
+    echo "";
+
+    if [[ $exitstat -ne 0 ]] ; then
+        # Print error again, useful for long usages messages
+        if [[ ! -z "${1:-}" ]] ; then
+            echo ""
+            echo "$g_prog: Error! $1"
+        fi
+    fi
+
+    # bash only:
+    if [[ $exitstat -ne 0 ]] ; then
+        echo "  at: $(caller)";
+    fi
+    exit $exitstat;
+}
+
+# ---- argument parsing
+
+# Save off the original args, use as "${g_origargs[@]}" (with double quotes)
+declare -a g_origargs;
+g_origargs=( ${1+"$@"} )
+
+opt_quiet=false;
+opt_exitonerr=false;
+opt_wait=false;
+opt_waittime=15;
+while [[ $# != 0 ]]; do
+    opt="$1"; shift;
+    case "$opt" in
+        # Flag with no argument example:
+        #   --flag|--fla|--fl|--f)
+        #     opt_flag=true;;
+        # Option with argument example:
+        #   --arg|--ar|--a)
+        #     [[ $# -eq 0 ]] && usage;
+        #     opt_somearg=$1; shift;;
+        -q|--quiet) opt_quiet=true;;
+        -e|--exitonerr) opt_exitonerr=true;;
+        --wait) opt_wait=true;;
+        --waittime)
+             [[ $# -eq 0 ]] && usage;
+             opt_waittime=$1; shift;;
+        -h|-help|--help|--hel|--he|--h) usage "" 0;;
+        -*) usage "Unrecognized option: $opt";;
+        *)  usage "Extra trailing arguments: $opt $@";;
+    esac
+done
+
+# ---- globals
+
+g_rootdir="$g_progdir/../.."
+g_rootdir_abs="$g_progdir_abs/../.."
+
+g_slagroot="$g_rootdir/bundles/smrtlink-analysisservices-gui/current/private/pacbio/smrtlink-analysisservices-gui"
+
+g_jre_verstr="jre/jre_11.0.12+7"
+g_jre_javahome="$g_rootdir_abs/bundles/smrtlink-analysisservices-gui/current/private/thirdparty/java/${g_jre_verstr}"
+g_smrtlink_javahome=$g_jre_javahome
+
+g_dbcmds_bindir="$g_rootdir_abs/bundles/smrtlink-analysisservices-gui/current/private/thirdparty/postgresql/postgresql_9.6.23/binwrap"
+g_python3_bindir="$g_rootdir_abs/bundles/smrttools/current/private/thirdparty/python3/python3_3.9.6/binwrap"
+g_python3_exe="$g_python3_bindir/python3"
+
+# ---- subroutines
+
+# ---- main
+
+smrtlink_errors=false;
+
+# smrtlink status
+echo
+echo "Checking SMRT Link status..."
+smrtlink_statstr="<unchecked>"
+stat=0
+
+# Bump up retries and sleep time from 3 and 5 to 10 and 8, respectively (to
+# see if we start up more reliably).
+sleep 80
+"$g_python3_exe" "$g_rootdir_abs/bundles/smrtlink-analysisservices-gui/current/private/pacbio/smrtlink-analysisservices-gui/bin/get-status" --max-retries 10 --sleep-time 8 > /dev/null || stat=$?
+if [[ $stat != 0 ]] ; then
+    smrtlink_errors=false;
+    smrtlink_statstr="Not Running"
+    echo
+else
+    smrtlink_statstr="ok"
+fi
+
+echo
+echo "Status summary:"
+echo "    SMRT Link status:  $smrtlink_statstr"
+
+if $smrtlink_errors; then
+    exit 1;
+fi
+
+exit 0;
