@@ -17,4 +17,4 @@ ENV SMRT_ROOT=/opt/pacbio/smrtlink
 EXPOSE 22 8243 9243 9443
 
 # Start services using services-start script
-ENTRYPOINT ["/opt/pacbio/smrtlink/admin/bin/services-start"]
+ENTRYPOINT ["/bin/bash", "-c", "/opt/pacbio/smrtlink/admin/bin/services-start && sleep infinity"]
