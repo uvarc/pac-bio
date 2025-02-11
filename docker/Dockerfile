@@ -1,9 +1,19 @@
 FROM masonaj157/smrtlink-containers:sl-cont-v1
 MAINTAINER "Praveen Kumar Addakula"
 
-# Install lsof
+# Switch to root for installing packages
 USER root
-RUN yum install -y lsof || apt-get update && apt-get install -y lsof
+
+# Check if yum, apt, or apk is available and install lsof accordingly
+RUN if command -v yum &>/dev/null; then \
+        yum install -y lsof; \
+    elif command -v apt-get &>/dev/null; then \
+        apt-get update && apt-get install -y lsof; \
+    elif command -v apk &>/dev/null; then \
+        apk add --no-cache lsof; \
+    else \
+        echo "No supported package manager found. lsof installation skipped."; \
+    fi
 
 # Copy services-status file into the container
 COPY services-status /opt/pacbio/smrtlink/admin/bin/services-status
@@ -13,6 +23,7 @@ RUN chown smrtanalysis:smrtanalysis /opt/pacbio/smrtlink/admin/bin/services-stat
     && chmod +x /opt/pacbio/smrtlink/admin/bin/services-status \
     || echo "Permission change failed, ignoring"
 
+# Switch back to smrtanalysis user
 USER smrtanalysis
 WORKDIR /home/smrtanalysis
 
@@ -22,3 +33,4 @@ EXPOSE 22 8243 9243 9443
 
 # Start services using services-start script
 ENTRYPOINT ["/bin/bash", "-c", "/opt/pacbio/smrtlink/admin/bin/services-start && sleep infinity"]
+
