@@ -153,7 +153,7 @@ stat=0
 # Bump up retries and sleep time from 3 and 5 to 10 and 8, respectively (to
 # see if we start up more reliably).
 sleep 80
-"$g_python3_exe" "$g_rootdir_abs/bundles/smrtlink-analysisservices-gui/current/private/pacbio/smrtlink-analysisservices-gui/bin/get-status" --max-retries 40 --sleep-time 120 > /dev/null || stat=$?
+"$g_python3_exe" "$g_rootdir_abs/bundles/smrtlink-analysisservices-gui/current/private/pacbio/smrtlink-analysisservices-gui/bin/get-status" --max-retries 10 --sleep-time 8 > /dev/null || stat=$?
 if [[ $stat != 0 ]] ; then
     smrtlink_errors=false;
     smrtlink_statstr="Not Running"
