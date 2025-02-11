@@ -1,6 +1,10 @@
 FROM masonaj157/smrtlink-containers:sl-cont-v1
 MAINTAINER "Praveen Kumar Addakula"
 
+# Install lsof
+USER root
+RUN yum install -y lsof || apt-get update && apt-get install -y lsof
+
 # Copy services-status file into the container
 COPY services-status /opt/pacbio/smrtlink/admin/bin/services-status
 
